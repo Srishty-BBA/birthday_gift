@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <title>A Little Something For You</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&family=Cormorant+Garamond:ital@0;1&family=Special+Elite&family=Oswald:wght@400;500;600;700&display=swap');
@@ -353,8 +354,29 @@ body{font-family:'Kalam',cursive;color:var(--ink);}
   <div id="vignette"></div>
   <button id="sound-toggle" title="toggle sound">🔊</button>
 
+  <!-- PASSCODE GATE -->
+  <div class="screen active" id="screen-passcode">
+    <div class="captcha-box">
+      <div class="captcha-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+        <div class="captcha-label">This is just for you 🔒</div>
+        <input type="password" id="passcode-input" placeholder="enter the passcode"
+          style="width:100%;background:var(--paper);border:1px solid rgba(205,164,78,0.35);
+          border-radius:6px;padding:10px 12px;color:var(--ink);font-family:'Kalam',cursive;
+          font-size:15px;outline:none;">
+        <div id="passcode-error" style="display:none;color:var(--terracotta);font-size:12px;">
+          that's not it... try again
+        </div>
+      </div>
+      <div class="captcha-footer">
+        <div class="captcha-logo">🔒</div>
+        <div class="captcha-footer-text">no one else can see this</div>
+      </div>
+    </div>
+    <button class="btn" id="btn-passcode-submit" style="margin-top:18px;">Unlock →</button>
+  </div>
+
   <!-- VERIFY -->
-  <div class="screen active" id="screen-verify">
+  <div class="screen" id="screen-verify">
     <div class="frame-img size-sm rot-3" id="img-verify"></div>
     <div class="captcha-box">
       <div class="captcha-row">
@@ -595,12 +617,27 @@ now go back and select yes.</div>
       Google Drive share link for any you want, leave the rest
       blank. Blank ones just stay hidden, nothing breaks.
    ============================================================ */
+/* ---------------- PASSCODE GATE ---------------- */
+/* The passcode your person needs to type before anything loads.
+   Not case-sensitive, spaces trimmed. Pick something only they'd know
+   (an inside joke, a date, a nickname). Send it to them separately —
+   text/WhatsApp, not in the same message as the link.
+   ⚠️ This is a light privacy gate, not real security: the passcode
+   still sits in this file's source code, so it stops casual visitors
+   and search engines, not a determined person inspecting the page. */
+const GIFT_PASSCODE = "changeme";
+
+/* startGiftApp() (defined below, wraps ALL the original code) only runs
+   after the correct passcode is entered — so no photo, video, or music
+   request ever fires until then. A wrong guess loads nothing. */
+function startGiftApp(){
+
 const CONFIG = {
   recipientName: "PENGUIN",
   fromName: "BINU",
 
   // the one photo shown on the hanging tag above "Happy Birthday!" — your pick.
-  coverPhoto: "https://drive.google.com/file/d/1P4r2dLWNBhRMjC_xxiSh8s81KDKuK09Y/view?usp=sharing",
+  coverPhoto: "https://drive.google.com/file/d/1P4r2dLWNBhRMjC_xxiSh8s81KDKuK09Y/view?usp=drive_link",
 
   photos: [
     "https://drive.google.com/file/d/1AbCxyz.../view",
@@ -624,10 +661,14 @@ const CONFIG = {
   //    someone sees it — it can only read what you've already made public).
   // 4. Paste both below. If this is filled in, it's used INSTEAD of the
   //    photos list above.
-  photoFolderLink: "https://drive.google.com/drive/folders/1zQlOpitazk_n08OmIr9AlENS9xlYzJtE?usp=sharing",
+  photoFolderLink: "https://drive.google.com/drive/folders/1zQlOpitazk_n08OmIr9AlENS9xlYzJtE?usp=drive_link",
   driveApiKey: "AIzaSyBvn70Xqxr28xo7VVEPBaC_UGTpTSLxZIU",
 
-  letterText: `I LOVE YOU.`,
+  letterText: `PASTE YOUR LETTER HERE.
+
+Write it just like you would on paper — line breaks and all.
+This whole block will show up exactly as you write it, in
+handwriting style, once the envelope is opened.`,
 
   backgroundMusicUrl: "https://drive.google.com/file/d/1LDb5kJc3dB_ptmcr-k2KcV340l5OV6Lz/view?usp=sharing", // plays the song.mp3 file sitting next to this HTML file. Swap for a Drive link if you'd rather.
   togetherSinceDate: "2022-09-13",         // "2022-09-13"  
@@ -644,22 +685,22 @@ const CONFIG = {
   // ---- MOVIES row: your proper, edited videos — one link per file ----
   movies: [
     { title: "Soft side", url: "https://drive.google.com/file/d/1NChvyJC4u8eCzEU4My2WUmsDmnlg8nmD/view?usp=sharing", thumb: "" },
-    { title: "Always!!", url: "https://drive.google.com/file/d/17qkRLagUfB8mT_kfdeu3MfGdbU3dviR8/view?usp=drive_link", thumb: "" },
-    { title: "Foodie uss", url: "https://drive.google.com/file/d/1oPLhDGiVWay47JaOzpou-hYx3Xx6IQRz/view?usp=drive_link", thumb: "" },
+    { title: "Always!!", url: "https://drive.google.com/file/d/17qkRLagUfB8mT_kfdeu3MfGdbU3dviR8/view?usp=sharing", thumb: "" },
+    { title: "Foodie uss", url: "https://drive.google.com/file/d/1oPLhDGiVWay47JaOzpou-hYx3Xx6IQRz/view?usp=sharing", thumb: "" },
   ],
 
   // ---- SHORTS feed: all your unedited clips in ONE Google Drive folder ----
   // Share that folder → "Anyone with the link" → Viewer → paste it here.
   // Uses the same driveApiKey you set up above for the photo folder.
-  shortsFolderLink: "https://drive.google.com/drive/folders/1tZHuGYYdnxo2co-Ox8bWpMRwKlDEzT0a?usp=drive_link",
+  shortsFolderLink: "https://drive.google.com/drive/folders/1tZHuGYYdnxo2co-Ox8bWpMRwKlDEzT0a?usp=sharing",
 
   // Each one is optional — paste a Google Drive link, or leave blank to hide it.
   images: {
     verify:  "",   // on the checkbox screen
-    ask:     "https://drive.google.com/file/d/14IuzkkcyI4drKjSjxwOy-TUlcGwqcFNS/view?usp=drive_link",   // on the "would you like to see it?" screen, before he answers
-    angry:   "https://drive.google.com/file/d/16ZqV9sA2_yVwogi2WTmNkyiuw18BFtzY/view?usp=drive_link",   // swaps in ONLY if he dares pick "No" — make it a funny/annoyed one
+    ask:     "https://drive.google.com/file/d/14IuzkkcyI4drKjSjxwOy-TUlcGwqcFNS/view?usp=sharing",   // on the "would you like to see it?" screen, before he answers
+    angry:   "https://drive.google.com/file/d/16ZqV9sA2_yVwogi2WTmNkyiuw18BFtzY/view?usp=sharing",   // swaps in ONLY if he dares pick "No" — make it a funny/annoyed one
     menu:    "",   // on the "tap each one" screen
-    letter:  "https://drive.google.com/file/d/1416e60yAvSA9LP0UkLkuCBQca4Zyeyz0/view?usp=sharing",   // next to the envelope
+    letter:  "",   // next to the envelope
     closing: "",   // used as the hero banner backdrop on the "For You" browse page
   },
 
@@ -1247,6 +1288,38 @@ document.getElementById('btn-replay').addEventListener('click', ()=>{
   resetNetflixFlow(); resumeBgMusic();
   showScreen('screen-cover');
 });
+
+} // end startGiftApp() — nothing above this line runs until the gate passes
+
+/* ---------------- PASSCODE GATE (runs immediately) ---------------- */
+/* This is the ONLY thing that executes on page load before unlock.
+   It has its own tiny CONFIG-independent read of the passcode so we
+   never need to build photos/videos/music just to check a guess. */
+(function(){
+  const screenPasscode = document.getElementById('screen-passcode');
+  const screenVerify = document.getElementById('screen-verify');
+  const input = document.getElementById('passcode-input');
+  const error = document.getElementById('passcode-error');
+  const submitBtn = document.getElementById('btn-passcode-submit');
+  let started = false;
+
+  function tryUnlock(){
+    const guess = (input.value || '').trim().toLowerCase();
+    const answer = (GIFT_PASSCODE || '').trim().toLowerCase();
+    if(guess && guess === answer){
+      if(!started){ started = true; startGiftApp(); }
+      screenPasscode.classList.remove('active');
+      screenVerify.classList.add('active');
+    } else {
+      error.style.display = 'block';
+      screenPasscode.style.animation = 'none';
+      void screenPasscode.offsetWidth;
+      screenPasscode.style.animation = '';
+    }
+  }
+  submitBtn.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+})();
 </script>
 </body>
 </html>
